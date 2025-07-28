@@ -56,11 +56,31 @@
     formData.append('file', selectedFile);
     formData.append('password', password);
     
-    // Simulate processing
-    setTimeout(() => {
-      console.log('Processing complete');
+    try {
+      const response = await fetch('https://tools.thesoorajsingh.me/unlock', {
+        method: 'POST',
+        body: formData
+      });
+
+      if (response.ok) {
+        const blob = await response.blob();
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `unlocked_${selectedFile.name}`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+        console.log('PDF unlocked successfully');
+      } else {
+        console.error('Failed to unlock PDF:', response.statusText);
+      }
+    } catch (error) {
+      console.error('Error unlocking PDF:', error);
+    } finally {
       isProcessing = false;
-    }, 2000);
+    }
   }
 
   function removeFile(): void {
