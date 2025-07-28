@@ -57,7 +57,7 @@
     formData.append('password', password);
     
     try {
-      const response = await fetch('https://tools.thesoorajsingh.me/unlock', {
+      const response = await fetch('https://api.thesoorajsingh.me/tools/unlock', {
         method: 'POST',
         body: formData
       });
@@ -134,106 +134,113 @@
 
     <!-- Main Card -->
     <Card className="p-6 space-y-6">
-      <!-- File Upload -->
-      <div class="space-y-2">
-        <Label>PDF File</Label>
-        <div
-          class={cn(
-            "border-2 border-dashed rounded-lg p-6 text-center cursor-pointer transition-colors",
-            isDragOver ? "border-primary bg-primary/5" : "border-border hover:border-primary/50",
-            selectedFile && "border-green-500 bg-green-500/5"
-          )}
-          on:dragover={handleDragOver}
-          on:dragleave={handleDragLeave}
-          on:drop={handleDrop}
-          role="button"
-          tabindex="0"
-        >
-          <input
-            bind:this={fileInput}
-            type="file"
-            accept=".pdf"
-            on:change={handleFileChange}
-            class="absolute inset-0 opacity-0 cursor-pointer"
-          />
-
-          {#if selectedFile}
-            <div class="flex items-center gap-3 text-left">
-              <div class="text-2xl">📄</div>
-              <div class="flex-1 min-w-0">
-                <div class="font-medium truncate">{selectedFile.name}</div>
-                <div class="text-sm text-muted-foreground">
-                  {(selectedFile.size / 1024 / 1024).toFixed(2)} MB
-                </div>
-              </div>
-              <Button
-                variant="ghost"
-                size="sm"
-                on:click={removeFile}
-                className="h-8 w-8 p-0 text-muted-foreground hover:text-destructive"
-              >
-                ✕
-              </Button>
-            </div>
-          {:else}
-            <div>
-              <div class="text-3xl mb-2">📁</div>
-              <div class="text-sm font-medium mb-1">Drop your PDF here</div>
-              <div class="text-xs text-muted-foreground">or click to browse</div>
-            </div>
-          {/if}
-        </div>
-      </div>
-
-      <!-- Password Input -->
-      <div class="space-y-2">
-        <Label for="password">Password</Label>
-        <div class="relative">
-          <Input
-            id="password"
-            type={showPassword ? "text" : "password"}
-            bind:value={password}
-            placeholder="Enter PDF password"
-            className="pr-10"
-          />
-          <Button
-            variant="ghost"
-            size="sm"
-            on:click={togglePasswordVisibility}
-            className="absolute right-0 top-0 h-10 w-10 p-0"
-            type="button"
+      <form on:submit|preventDefault={handleSubmit} class="space-y-6">
+        <!-- File Upload -->
+        <div class="space-y-2">
+          <Label>PDF File</Label>
+          <div
+            class={cn(
+              "border-2 border-dashed rounded-lg p-6 text-center cursor-pointer transition-colors relative",
+              isDragOver ? "border-primary bg-primary/5" : "border-border hover:border-primary/50",
+              selectedFile && "border-green-500 bg-green-500/5"
+            )}
+            on:dragover={handleDragOver}
+            on:dragleave={handleDragLeave}
+            on:drop={handleDrop}
+            role="button"
+            tabindex="0"
           >
-            {#if showPassword}
-              <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-              </svg>
-            {:else}
-              <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.878 9.878L3 3m6.878 6.878L21 21" />
-              </svg>
-            {/if}
-          </Button>
-        </div>
-      </div>
+            <input
+              bind:this={fileInput}
+              type="file"
+              accept=".pdf"
+              on:change={handleFileChange}
+              class="absolute inset-0 opacity-0 cursor-pointer"
+              style="z-index:1;"
+              tabindex="-1"
+            />
 
-      <!-- Submit Button -->
-      <Button
-        on:click={handleSubmit}
-        disabled={isProcessing || !selectedFile || !password}
-        className="w-full"
-        size="lg"
-      >
-        {#if isProcessing}
-          <svg class="animate-spin -ml-1 mr-2 h-4 w-4" fill="none" viewBox="0 0 24 24">
-            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-          </svg>
-          Processing...
-        {:else}
-          Unlock PDF
-        {/if}
-      </Button>
+            {#if selectedFile}
+              <div class="flex items-center gap-3 text-left">
+                <div class="text-2xl">📄</div>
+                <div class="flex-1 min-w-0">
+                  <div class="font-medium truncate">{selectedFile.name}</div>
+                  <div class="text-sm text-muted-foreground">
+                    {(selectedFile.size / 1024 / 1024).toFixed(2)} MB
+                  </div>
+                </div>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  on:click={removeFile}
+                  className="h-8 w-8 p-0 text-muted-foreground hover:text-destructive"
+                  type="button"
+                >
+                  ✕
+                </Button>
+              </div>
+            {:else}
+              <div>
+                <div class="text-3xl mb-2">📁</div>
+                <div class="text-sm font-medium mb-1">Drop your PDF here</div>
+                <div class="text-xs text-muted-foreground">or click to browse</div>
+              </div>
+            {/if}
+          </div>
+        </div>
+
+        <!-- Password Input -->
+        <div class="space-y-2">
+          <Label for="password">Password</Label>
+          <div class="relative">
+            <Input
+              id="password"
+              type={showPassword ? "text" : "password"}
+              bind:value={password}
+              placeholder="Enter PDF password"
+              className="pr-10"
+              required
+              autocomplete="current-password"
+            />
+            <Button
+              variant="ghost"
+              size="sm"
+              on:click={togglePasswordVisibility}
+              className="absolute right-0 top-0 h-10 w-10 p-0"
+              type="button"
+            >
+              {#if showPassword}
+                <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                </svg>
+              {:else}
+                <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.878 9.878L3 3m6.878 6.878L21 21" />
+                </svg>
+              {/if}
+            </Button>
+          </div>
+        </div>
+
+        <!-- Submit Button -->
+        <Button
+          type="submit"
+          disabled={isProcessing || !selectedFile || !password}
+          className="w-full"
+          size="lg"
+        >
+          {#if isProcessing}
+            <svg class="animate-spin -ml-1 mr-2 h-4 w-4" fill="none" viewBox="0 0 24 24">
+              <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+              <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+            </svg>
+            Processing...
+          {:else}
+            Unlock PDF
+          {/if}
+        </Button>
+      </form>
     </Card>
   </main>
 </div>

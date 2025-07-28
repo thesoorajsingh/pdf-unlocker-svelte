@@ -1,96 +1,56 @@
 @import url("https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap");
 @import "tailwindcss";
 
-@layer base {
-  :root {
-    --background: 0 0% 100%;
-    --foreground: 222.2 84% 4.9%;
-    --card: 0 0% 100%;
-    --card-foreground: 222.2 84% 4.9%;
-    --popover: 0 0% 100%;
-    --popover-foreground: 222.2 84% 4.9%;
-    --primary: 222.2 47.4% 11.2%;
-    --primary-foreground: 210 40% 98%;
-    --secondary: 210 40% 96%;
-    --secondary-foreground: 222.2 47.4% 11.2%;
-    --muted: 210 40% 96%;
-    --muted-foreground: 215.4 16.3% 46.9%;
-    --accent: 210 40% 96%;
-    --accent-foreground: 222.2 47.4% 11.2%;
-    --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 210 40% 98%;
-    --border: 214.3 31.8% 91.4%;
-    --input: 214.3 31.8% 91.4%;
-    --ring: 222.2 84% 4.9%;
-    --radius: 0.5rem;
-  }
-
-  .dark {
-    --background: 222.2 84% 4.9%;
-    --foreground: 210 40% 98%;
-    --card: 222.2 84% 4.9%;
-    --card-foreground: 210 40% 98%;
-    --popover: 222.2 84% 4.9%;
-    --popover-foreground: 210 40% 98%;
-    --primary: 210 40% 98%;
-    --primary-foreground: 222.2 47.4% 11.2%;
-    --secondary: 217.2 32.6% 17.5%;
-    --secondary-foreground: 210 40% 98%;
-    --muted: 217.2 32.6% 17.5%;
-    --muted-foreground: 215 20.2% 65.1%;
-    --accent: 217.2 32.6% 17.5%;
-    --accent-foreground: 210 40% 98%;
-    --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 210 40% 98%;
-    --border: 217.2 32.6% 17.5%;
-    --input: 217.2 32.6% 17.5%;
-    --ring: 212.7 26.8% 83.9%;
-  }
-}
-
-@layer base {
-  body {
-    @apply bg-background text-foreground;
-    font-family: "Inter", system-ui, sans-serif;
-  }
+/* Tailwind theme variables (mapped to utility classes) */
+@theme {
+  /* Light mode (default) */
+  --color-background: hsl(330, 100%, 99%);
+  --color-foreground: hsl(333, 80%, 10%);
+  --color-card: hsl(330, 100%, 99%);
+  --color-card-foreground: hsl(333, 80%, 10%);
+  --color-popover: hsl(330, 100%, 99%);
+  --color-popover-foreground: hsl(333, 80%, 10%);
+  --color-primary: hsl(333, 80%, 60%);
+  --color-primary-foreground: hsl(330, 100%, 99%);
+  --color-secondary: hsl(333, 80%, 90%);
+  --color-secondary-foreground: hsl(333, 80%, 10%);
+  --color-muted: hsl(333, 80%, 95%);
+  --color-muted-foreground: hsl(333, 40%, 40%);
+  --color-accent: hsl(333, 80%, 85%);
+  --color-accent-foreground: hsl(333, 80%, 10%);
+  --color-destructive: hsl(350, 80%, 60%);
+  --color-destructive-foreground: hsl(330, 100%, 99%);
+  --color-border: hsl(333, 80%, 90%);
+  --color-input: hsl(333, 80%, 90%);
+  --color-ring: hsl(333, 80%, 60%);
+  --radius-md: 0.5rem;
 }
 
 .dark {
-  --background: oklch(0.147 0.004 49.25);
-  --foreground: oklch(0.985 0.001 106.423);
-  --card: oklch(0.216 0.006 56.043);
-  --card-foreground: oklch(0.985 0.001 106.423);
-  --popover: oklch(0.216 0.006 56.043);
-  --popover-foreground: oklch(0.985 0.001 106.423);
-  --primary: oklch(0.923 0.003 48.717);
-  --primary-foreground: oklch(0.216 0.006 56.043);
-  --secondary: oklch(0.268 0.007 34.298);
-  --secondary-foreground: oklch(0.985 0.001 106.423);
-  --muted: oklch(0.268 0.007 34.298);
-  --muted-foreground: oklch(0.709 0.01 56.259);
-  --accent: oklch(0.268 0.007 34.298);
-  --accent-foreground: oklch(0.985 0.001 106.423);
-  --destructive: oklch(0.704 0.191 22.216);
-  --border: oklch(1 0 0 / 10%);
-  --input: oklch(1 0 0 / 15%);
-  --ring: oklch(0.553 0.013 58.071);
-  --chart-1: oklch(0.488 0.243 264.376);
-  --chart-2: oklch(0.696 0.17 162.48);
-  --chart-3: oklch(0.769 0.188 70.08);
-  --chart-4: oklch(0.627 0.265 303.9);
-  --chart-5: oklch(0.645 0.246 16.439);
-  --sidebar: oklch(0.216 0.006 56.043);
-  --sidebar-foreground: oklch(0.985 0.001 106.423);
-  --sidebar-primary: oklch(0.488 0.243 264.376);
-  --sidebar-primary-foreground: oklch(0.985 0.001 106.423);
-  --sidebar-accent: oklch(0.268 0.007 34.298);
-  --sidebar-accent-foreground: oklch(0.985 0.001 106.423);
-  --sidebar-border: oklch(1 0 0 / 10%);
-  --sidebar-ring: oklch(0.553 0.013 58.071);
+  --color-background: hsl(333, 80%, 10%);
+  --color-foreground: hsl(330, 100%, 99%);
+  --color-card: hsl(333, 80%, 15%);
+  --color-card-foreground: hsl(330, 100%, 99%);
+  --color-popover: hsl(333, 80%, 15%);
+  --color-popover-foreground: hsl(330, 100%, 99%);
+  --color-primary: hsl(333, 80%, 60%);
+  --color-primary-foreground: hsl(333, 80%, 10%);
+  --color-secondary: hsl(333, 80%, 25%);
+  --color-secondary-foreground: hsl(330, 100%, 99%);
+  --color-muted: hsl(333, 80%, 20%);
+  --color-muted-foreground: hsl(333, 40%, 70%);
+  --color-accent: hsl(333, 80%, 30%);
+  --color-accent-foreground: hsl(330, 100%, 99%);
+  --color-destructive: hsl(350, 80%, 40%);
+  --color-destructive-foreground: hsl(330, 100%, 99%);
+  --color-border: hsl(333, 80%, 25%);
+  --color-input: hsl(333, 80%, 25%);
+  --color-ring: hsl(333, 80%, 60%);
 }
 
 @layer base {
   body {
-    @apply bg-background text-foreground;
+    font-family: "Manrope", -apple-system, BlinkMacSystemFont, "Segoe UI",
+      system-ui, sans-serif;
   }
 }
