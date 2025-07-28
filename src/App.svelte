@@ -75,11 +75,35 @@
 
       request.onsuccess = function(event) {
         const db = (event.target as IDBOpenDBRequest).result;
-        const transaction = db.transaction(['pdfs'], 'readwrite');
-        const store = transaction.objectStore('pdfs');
-        store.put({ name: fileName, blob: pdfBlob });
-        transaction.oncomplete = () => resolve();
-        transaction.onerror = () => reject(transaction.error);
+        // Ensure object store exists before transaction
+        if (!db.objectStoreNames.contains('pdfs')) {
+          const version = db.version + 1;
+          db.close();
+          const upgradeRequest = indexedDB.open('pdf-unlocker-db', version);
+          upgradeRequest.onupgradeneeded = function(e) {
+            const upgradeDb = (e.target as IDBOpenDBRequest).result;
+            if (!upgradeDb.objectStoreNames.contains('pdfs')) {
+              upgradeDb.createObjectStore('pdfs', { keyPath: 'name' });
+            }
+          };
+          upgradeRequest.onsuccess = function(e) {
+            const upgradeDb = (e.target as IDBOpenDBRequest).result;
+            const transaction = upgradeDb.transaction(['pdfs'], 'readwrite');
+            const store = transaction.objectStore('pdfs');
+            store.put({ name: fileName, blob: pdfBlob });
+            transaction.oncomplete = () => resolve();
+            transaction.onerror = () => reject(transaction.error);
+          };
+          upgradeRequest.onerror = function() {
+            reject(upgradeRequest.error);
+          };
+        } else {
+          const transaction = db.transaction(['pdfs'], 'readwrite');
+          const store = transaction.objectStore('pdfs');
+          store.put({ name: fileName, blob: pdfBlob });
+          transaction.oncomplete = () => resolve();
+          transaction.onerror = () => reject(transaction.error);
+        }
       };
 
       request.onerror = function() {
@@ -93,8 +117,20 @@
     return new Promise<{ name: string; blob: Blob }[]>((resolve, reject) => {
       const request = indexedDB.open('pdf-unlocker-db', 1);
 
+      request.onupgradeneeded = function(event) {
+        const db = (event.target as IDBOpenDBRequest).result;
+        if (!db.objectStoreNames.contains('pdfs')) {
+          db.createObjectStore('pdfs', { keyPath: 'name' });
+        }
+      };
+
       request.onsuccess = function(event) {
         const db = (event.target as IDBOpenDBRequest).result;
+        // Ensure object store exists before transaction
+        if (!db.objectStoreNames.contains('pdfs')) {
+          resolve([]);
+          return;
+        }
         const transaction = db.transaction(['pdfs'], 'readonly');
         const store = transaction.objectStore('pdfs');
         const items: { name: string; blob: Blob }[] = [];
