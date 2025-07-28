@@ -61,10 +61,12 @@
     }
   }
 
+  const DB_VERSION = 3;
+
   // Util function to store PDF in IndexedDB
   async function storePdfInIndexedDB(fileName: string, pdfBlob: Blob) {
     return new Promise<void>((resolve, reject) => {
-      const request = indexedDB.open('pdf-unlocker-db', 1);
+      const request = indexedDB.open('pdf-unlocker-db', DB_VERSION);
 
       request.onupgradeneeded = function(event) {
         const db = (event.target as IDBOpenDBRequest).result;
@@ -115,7 +117,7 @@
   // Fetch all unlocked PDFs from IndexedDB
   async function fetchUnlockedPdfs() {
     return new Promise<{ name: string; blob: Blob }[]>((resolve, reject) => {
-      const request = indexedDB.open('pdf-unlocker-db', 1);
+      const request = indexedDB.open('pdf-unlocker-db', DB_VERSION);
 
       request.onupgradeneeded = function(event) {
         const db = (event.target as IDBOpenDBRequest).result;
