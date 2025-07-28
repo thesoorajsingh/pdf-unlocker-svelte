@@ -10,6 +10,7 @@
   import Card from '@/lib/components/ui/card.svelte';
   import Input from '@/lib/components/ui/input.svelte';
   import Label from '@/lib/components/ui/label.svelte';
+  import Toast from '@/lib/components/ui/toast.svelte';
   import { cn } from '@/lib/utils';
 
   let fileInput: HTMLInputElement;
@@ -19,6 +20,15 @@
   let isDragOver: boolean = false;
   let isProcessing: boolean = false;
   let isDarkMode: boolean = false;
+
+  type ToastItem = {
+    id: number;
+    message: string;
+    type: 'default' | 'destructive';
+  };
+
+  let toasts: ToastItem[] = [];
+  let toastId = 0;
 
   function handleFileChange(event: Event): void {
     const target = event.target as HTMLInputElement;
@@ -48,6 +58,45 @@
     }
   }
 
+  // Util function to store PDF in IndexedDB
+  async function storePdfInIndexedDB(fileName: string, pdfBlob: Blob) {
+    return new Promise<void>((resolve, reject) => {
+      const request = indexedDB.open('pdf-unlocker-db', 1);
+
+      request.onupgradeneeded = function(event) {
+        const db = (event.target as IDBOpenDBRequest).result;
+        if (!db.objectStoreNames.contains('pdfs')) {
+          db.createObjectStore('pdfs', { keyPath: 'name' });
+        }
+      };
+
+      request.onsuccess = function(event) {
+        const db = (event.target as IDBOpenDBRequest).result;
+        const transaction = db.transaction(['pdfs'], 'readwrite');
+        const store = transaction.objectStore('pdfs');
+        store.put({ name: fileName, blob: pdfBlob });
+        transaction.oncomplete = () => resolve();
+        transaction.onerror = () => reject(transaction.error);
+      };
+
+      request.onerror = function() {
+        reject(request.error);
+      };
+    });
+  }
+
+  function showToast(message: string, type: 'default' | 'destructive' = 'default') {
+    const id = ++toastId;
+    toasts = [...toasts, { id, message, type }];
+    setTimeout(() => {
+      toasts = toasts.filter(t => t.id !== id);
+    }, 4000);
+  }
+
+  function showDestructiveToast(message: string) {
+    showToast(message, 'destructive');
+  }
+
   async function handleSubmit(): Promise<void> {
     if (!selectedFile || !password) return;
 
@@ -73,11 +122,16 @@
         document.body.removeChild(a);
         URL.revokeObjectURL(url);
         console.log('PDF unlocked successfully');
+
+        // Store PDF in IndexedDB
+        await storePdfInIndexedDB(`unlocked_${selectedFile.name}`, blob);
       } else {
         console.error('Failed to unlock PDF:', response.statusText);
+        showDestructiveToast('Failed to unlock PDF: ' + response.statusText);
       }
     } catch (error) {
       console.error('Error unlocking PDF:', error);
+      showDestructiveToast('Error unlocking PDF');
     } finally {
       isProcessing = false;
     }
@@ -243,6 +297,17 @@
       </form>
     </Card>
   </main>
+
+  {#each toasts as toast (toast.id)}
+    <Toast
+      message={toast.message}
+      type={toast.type}
+      visible={true}
+      onClose={() => {
+        toasts = toasts.filter(t => t.id !== toast.id);
+      }}
+    />
+  {/each}
 </div>
 
 <style>
