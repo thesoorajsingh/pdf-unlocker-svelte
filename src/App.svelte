@@ -21,6 +21,9 @@
   let isProcessing: boolean = false;
   let isDarkMode: boolean = false;
 
+  // List of unlocked PDFs
+  let unlockedPdfs: { name: string; blob: Blob }[] = [];
+
   type ToastItem = {
     id: number;
     message: string;
@@ -85,6 +88,51 @@
     });
   }
 
+  // Fetch all unlocked PDFs from IndexedDB
+  async function fetchUnlockedPdfs() {
+    return new Promise<{ name: string; blob: Blob }[]>((resolve, reject) => {
+      const request = indexedDB.open('pdf-unlocker-db', 1);
+
+      request.onsuccess = function(event) {
+        const db = (event.target as IDBOpenDBRequest).result;
+        const transaction = db.transaction(['pdfs'], 'readonly');
+        const store = transaction.objectStore('pdfs');
+        const items: { name: string; blob: Blob }[] = [];
+        const cursorRequest = store.openCursor();
+
+        cursorRequest.onsuccess = function(e) {
+          const cursor = (e.target as IDBRequest<IDBCursorWithValue>).result;
+          if (cursor) {
+            items.push({ name: cursor.value.name, blob: cursor.value.blob });
+            cursor.continue();
+          } else {
+            resolve(items);
+          }
+        };
+
+        cursorRequest.onerror = function() {
+          reject(cursorRequest.error);
+        };
+      };
+
+      request.onerror = function() {
+        reject(request.error);
+      };
+    });
+  }
+
+  // Download PDF from blob
+  function downloadPdf(name: string, blob: Blob) {
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = name;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  }
+
   function showToast(message: string, type: 'default' | 'destructive' = 'default') {
     const id = ++toastId;
     toasts = [...toasts, { id, message, type }];
@@ -125,6 +173,9 @@
 
         // Store PDF in IndexedDB
         await storePdfInIndexedDB(`unlocked_${selectedFile.name}`, blob);
+
+        // Refresh unlocked PDFs list
+        unlockedPdfs = await fetchUnlockedPdfs();
       } else {
         console.error('Failed to unlock PDF:', response.statusText);
         showDestructiveToast('Failed to unlock PDF: ' + response.statusText);
@@ -148,7 +199,7 @@
     localStorage.setItem('darkMode', isDarkMode.toString());
   }
 
-  onMount(() => {
+  onMount(async () => {
     const savedMode = localStorage.getItem('darkMode');
     if (savedMode !== null) {
       isDarkMode = savedMode === 'true';
@@ -156,6 +207,9 @@
       isDarkMode = window.matchMedia('(prefers-color-scheme: dark)').matches;
     }
     document.documentElement.classList.toggle('dark', isDarkMode);
+
+    // Fetch unlocked PDFs from IndexedDB
+    unlockedPdfs = await fetchUnlockedPdfs();
   });
 </script>
 
@@ -297,6 +351,33 @@
       </form>
     </Card>
   </main>
+
+  <!-- List of previously unlocked PDFs -->
+  <div class="container mx-auto max-w-md px-4 mt-8">
+    <Card className="p-6 space-y-4">
+      <h2 class="text-lg font-semibold mb-2">Previously Unlocked PDFs</h2>
+      {#if unlockedPdfs.length === 0}
+        <div class="text-muted-foreground text-sm">No unlocked PDFs found.</div>
+      {:else}
+        <ul class="space-y-2">
+          {#each unlockedPdfs as pdf (pdf.name)}
+            <li class="flex items-center justify-between">
+              <span class="truncate">{pdf.name}</span>
+              <Button
+                variant="outline"
+                size="sm"
+                on:click={() => downloadPdf(pdf.name, pdf.blob)}
+                className="ml-2"
+                type="button"
+              >
+                Download
+              </Button>
+            </li>
+          {/each}
+        </ul>
+      {/if}
+    </Card>
+  </div>
 
   {#each toasts as toast (toast.id)}
     <Toast
